@@ -5,7 +5,7 @@
  * Fault injection targets ONLY the explicitly configured demo services.
  * This capability is disabled by default and requires ENABLE_FAULT_INJECTION=true.
  */
-import type { ReplayScenario } from '@tracelens/shared';
+import type { ReplayScenario } from '@tracinger/shared';
 declare class ReplayService {
     getScenarios(): ReplayScenario[];
     getScenario(id: string): ReplayScenario | undefined;

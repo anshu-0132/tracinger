@@ -10,7 +10,7 @@ import axios from 'axios';
 import { prisma } from '../config/database';
 import { env } from '../config/env';
 import { logger } from '../config/logger';
-import type { ReplayScenario } from '@tracelens/shared';
+import type { ReplayScenario } from '@tracinger/shared';
 
 const SCENARIOS: ReplayScenario[] = [
   {

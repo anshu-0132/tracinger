@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { api } from '../services/api';
 import { MonoId } from '../components/MonoId';
 import { LoadingSkeleton, ErrorBanner, EmptyState } from '../components/FeedbackStates';
-import type { SpanInfo } from '@tracelens/shared';
+import type { SpanInfo } from '@tracinger/shared';
 import {
   Search,
   FileText,

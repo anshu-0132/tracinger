@@ -11,7 +11,7 @@ import {
   TableCell,
 } from '../components/DataTable';
 import { LoadingSkeleton, ErrorBanner, EmptyState } from '../components/FeedbackStates';
-import type { AlertMetric, AlertOperator, AlertSeverity } from '@tracelens/shared';
+import type { AlertMetric, AlertOperator, AlertSeverity } from '@tracinger/shared';
 import {
   BellRing,
   Plus,

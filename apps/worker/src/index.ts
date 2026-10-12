@@ -1,5 +1,5 @@
 /**
- * TraceLens Worker
+ * Tracinger Worker
  *
  * Runs scheduled jobs:
  *   1. Alert rule evaluation (default: every 30 s)
@@ -35,7 +35,7 @@ const logger = pino({
     NODE_ENV !== 'production'
       ? { target: 'pino-pretty', options: { colorize: true, translateTime: 'SYS:standard' } }
       : undefined,
-  base: { service: 'tracelens-worker', env: NODE_ENV },
+  base: { service: 'tracinger-worker', env: NODE_ENV },
 });
 
 // ── Database ─────────────────────────────────────────────────────────────────

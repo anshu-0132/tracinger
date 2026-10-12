@@ -21,7 +21,7 @@
  * Correlation does not imply causation. Results must be interpreted with
  * supporting evidence.
  */
-import type { RootCauseCandidate, Incident, Deployment } from '@tracelens/shared';
+import type { RootCauseCandidate, Incident, Deployment } from '@tracinger/shared';
 export interface IncidentContext {
     incident: Incident;
     /** Error rate at incident start (0–1, null if metric absent) */

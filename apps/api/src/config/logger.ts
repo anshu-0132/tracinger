@@ -19,7 +19,7 @@ export const logger = pino({
     censor: '[REDACTED]',
   },
   base: {
-    service: 'tracelens-api',
+    service: 'tracinger-api',
     env: env.NODE_ENV,
   },
 });

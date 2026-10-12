@@ -24,7 +24,7 @@ processors:
   resource:
     attributes:
       - key: collector.name
-        value: tracelens-collector
+        value: tracinger-collector
         action: insert
 
 exporters:

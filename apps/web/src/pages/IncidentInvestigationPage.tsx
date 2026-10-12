@@ -7,7 +7,7 @@ import { EvidenceCard } from '../components/EvidenceCard';
 import { TimeSeriesChart } from '../components/TimeSeriesChart';
 import { MonoId } from '../components/MonoId';
 import { LoadingSkeleton, ErrorBanner } from '../components/FeedbackStates';
-import type { RootCauseCandidate } from '@tracelens/shared';
+import type { RootCauseCandidate } from '@tracinger/shared';
 import {
   ArrowLeft,
   Activity,

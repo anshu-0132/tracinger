@@ -1,5 +1,5 @@
 {
-  "name": "@tracelens/worker",
+  "name": "@tracinger/worker",
   "version": "1.0.0",
   "private": true,
   "main": "dist/index.js",
@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@prisma/client": "^6.4.1",
-    "@tracelens/shared": "*",
+    "@tracinger/shared": "*",
     "axios": "^1.8.4",
     "node-cron": "^3.0.3",
     "pino": "^9.6.0",

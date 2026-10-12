@@ -141,7 +141,7 @@ async function main() {
       commitSha: '4c3d2e1b',
       releaseNotes: 'Replaced single-row stock query with batch cache index lookup',
       deployedAt: new Date(now.getTime() - 90 * 60 * 1000), // 90 mins ago
-      deployedBy: 'alex.dev@tracelens.internal',
+      deployedBy: 'alex.dev@tracinger.internal',
     },
   });
 
@@ -261,7 +261,7 @@ async function main() {
         type: 'incident_opened',
         toStatus: 'OPEN',
         note: 'Alert rule "High HTTP 5xx Error Rate" breached continuously for 1m (threshold: 0.05, value: 0.184)',
-        createdBy: 'TraceLens Alert Engine',
+        createdBy: 'Tracinger Alert Engine',
         createdAt: new Date(now.getTime() - 19 * 60 * 1000),
       },
       {
@@ -382,7 +382,7 @@ async function main() {
     create: { key: 'deployment_lookback_minutes', value: '60' },
   });
 
-  console.log('✨ Seed complete! TraceLens database is ready.');
+  console.log('✨ Seed complete! Tracinger database is ready.');
 }
 
 main()

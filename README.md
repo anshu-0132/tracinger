@@ -1,6 +1,6 @@
-# TraceLens
+# Tracinger
 
-TraceLens is an application observability and incident investigation platform. It provides distributed tracing, metrics ingestion, automated root-cause correlation, and an SRE investigation console.
+Tracinger is an application observability and incident investigation platform. It provides distributed tracing, metrics ingestion, automated root-cause correlation, and an SRE investigation console.
 
 ## Architecture
 

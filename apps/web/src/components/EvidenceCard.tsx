@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import type { RootCauseCandidate } from '@tracelens/shared';
+import type { RootCauseCandidate } from '@tracinger/shared';
 import { ChevronDown, ChevronRight, ExternalLink, MinusCircle } from 'lucide-react';
 
 interface EvidenceCardProps {

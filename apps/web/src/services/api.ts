@@ -12,7 +12,7 @@ import type {
   TraceInfo,
   LogEntry,
   PaginatedResponse,
-} from '@tracelens/shared';
+} from '@tracinger/shared';
 import {
   mockServices,
   mockOverview,
@@ -73,7 +73,7 @@ async function withFallback<T>(apiFn: () => Promise<T>, fallback: T): Promise<T>
   try {
     return await apiFn();
   } catch (err) {
-    console.warn('[TraceLens] Live API query failed, utilizing fallback telemetry snapshot:', err);
+    console.warn('[Tracinger] Live API query failed, utilizing fallback telemetry snapshot:', err);
     return fallback;
   }
 }

@@ -7,7 +7,7 @@ import { Resource } from '@opentelemetry/resources';
 import { SEMRESATTRS_SERVICE_NAME, SEMRESATTRS_SERVICE_VERSION } from '@opentelemetry/semantic-conventions';
 
 const OTEL_ENDPOINT = process.env.OTEL_EXPORTER_OTLP_ENDPOINT ?? 'http://localhost:4318';
-const SERVICE_NAME = process.env.OTEL_SERVICE_NAME ?? 'tracelens-api';
+const SERVICE_NAME = process.env.OTEL_SERVICE_NAME ?? 'tracinger-api';
 
 const sdk = new NodeSDK({
   resource: new Resource({

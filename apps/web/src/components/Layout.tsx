@@ -83,7 +83,7 @@ export const Layout: React.FC<LayoutProps> = ({ onRefresh, isRefreshing = false,
     if (path === '/replay-lab') return 'Incident Replay Lab';
     if (path === '/explorer') return 'Telemetry Explorer';
     if (path === '/settings') return 'Settings & Probes';
-    return 'TraceLens';
+    return 'Tracinger';
   };
 
   return (
@@ -103,7 +103,7 @@ export const Layout: React.FC<LayoutProps> = ({ onRefresh, isRefreshing = false,
             {!isSidebarCollapsed && (
               <div className="min-w-0">
                 <span className="font-semibold text-xs tracking-tight text-txt-primary block leading-none">
-                  TraceLens
+                  Tracinger
                 </span>
                 <span className="text-[10px] text-txt-muted font-mono leading-none tracking-tight">
                   v1.4.2
@@ -203,7 +203,7 @@ export const Layout: React.FC<LayoutProps> = ({ onRefresh, isRefreshing = false,
         {/* Top Control Bar */}
         <header className="h-12 border-b border-border bg-surface px-4 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2.5 min-w-0">
-            <span className="text-xs font-mono text-txt-muted">tracelens</span>
+            <span className="text-xs font-mono text-txt-muted">tracinger</span>
             <span className="text-txt-muted">/</span>
             <span className="text-xs font-semibold text-txt-primary truncate">
               {getBreadcrumb()}

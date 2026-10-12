@@ -1,8 +1,8 @@
 {
-  "name": "tracelens",
+  "name": "tracinger",
   "version": "1.0.0",
   "private": true,
-  "description": "TraceLens — Application Observability and Incident Investigation Platform",
+  "description": "Tracinger — Application Observability and Incident Investigation Platform",
   "workspaces": [
     "apps/*",
     "packages/*"

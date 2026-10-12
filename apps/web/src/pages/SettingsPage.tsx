@@ -68,7 +68,7 @@ export const SettingsPage: React.FC = () => {
       role: 'Application State & Incident Relational DB',
       status: status.services.database === 'ok' ? 'healthy' : 'unhealthy',
       latency: '3ms',
-      endpoint: 'localhost:5432/tracelens',
+      endpoint: 'localhost:5432/tracinger',
       lastChecked: 'just now',
     },
   ] as const;

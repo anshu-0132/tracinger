@@ -64,7 +64,7 @@ export async function processNotifications(prisma: PrismaClient, logger: Logger)
     try {
       const response = await axios.post(config.webhookUrl, payload, {
         timeout: REQUEST_TIMEOUT_MS,
-        headers: { 'Content-Type': 'application/json', 'X-TraceLens-Event': delivery.event },
+        headers: { 'Content-Type': 'application/json', 'X-Tracinger-Event': delivery.event },
         validateStatus: (status) => status < 500,
       });
 

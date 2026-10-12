@@ -9,7 +9,7 @@
  * When a backend is unavailable, methods return empty results rather than
  * crashing the API, and always document the failure via the logger.
  */
-import type { LogEntry, TraceInfo, TimeSeriesPoint } from '@tracelens/shared';
+import type { LogEntry, TraceInfo, TimeSeriesPoint } from '@tracinger/shared';
 declare class TelemetryService {
     private prometheus;
     private loki;

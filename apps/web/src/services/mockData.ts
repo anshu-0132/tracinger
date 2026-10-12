@@ -12,7 +12,7 @@ import type {
   SpanInfo,
   LogEntry,
   PaginatedResponse,
-} from '@tracelens/shared';
+} from '@tracinger/shared';
 import type { OverviewData, SettingsStatus } from './api';
 
 export const mockServices: (Service & { health: ServiceHealth; _count: { incidents: number; alertRules: number } })[] = [
@@ -129,7 +129,7 @@ export const mockDeployments: Deployment[] = [
     commitSha: 'a7f3c2b8e910',
     releaseNotes: 'Optimized checkout session caching & updated connection pool timeouts',
     deployedAt: new Date(Date.now() - 14 * 60000).toISOString(),
-    deployedBy: 'deploy-bot@tracelens.io',
+    deployedBy: 'deploy-bot@tracinger.io',
     createdAt: new Date(Date.now() - 14 * 60000).toISOString(),
   },
   {
@@ -140,7 +140,7 @@ export const mockDeployments: Deployment[] = [
     commitSha: '9e4a11f20d5c',
     releaseNotes: 'Added Redis read replicas for SKU reservation checks',
     deployedAt: new Date(Date.now() - 3 * 3600000).toISOString(),
-    deployedBy: 'lead-dev@tracelens.io',
+    deployedBy: 'lead-dev@tracinger.io',
     createdAt: new Date(Date.now() - 3 * 3600000).toISOString(),
   },
   {
@@ -151,7 +151,7 @@ export const mockDeployments: Deployment[] = [
     commitSha: '5c2b9a7114ee',
     releaseNotes: 'Stripe webhook retry exponential backoff bump',
     deployedAt: new Date(Date.now() - 24 * 3600000).toISOString(),
-    deployedBy: 'security-team@tracelens.io',
+    deployedBy: 'security-team@tracinger.io',
     createdAt: new Date(Date.now() - 24 * 3600000).toISOString(),
   },
 ];
@@ -321,7 +321,7 @@ export const mockIncidents: (Incident & {
         fromStatus: undefined,
         toStatus: 'OPEN',
         note: 'Threshold breached: Error rate 7.4% > 5.0%',
-        createdBy: 'TraceLens Evaluation Daemon',
+        createdBy: 'Tracinger Evaluation Daemon',
         createdAt: new Date(Date.now() - 10 * 60000).toISOString(),
       },
       {
@@ -329,7 +329,7 @@ export const mockIncidents: (Incident & {
         incidentId: 'inc-p1-order-err',
         type: 'deployment_correlated',
         note: 'Automated correlation: Deployment v1.4.2 (commit a7f3c2b8e910) detected 3m before symptom onset',
-        createdBy: 'TraceLens Intelligence Engine',
+        createdBy: 'Tracinger Intelligence Engine',
         createdAt: new Date(Date.now() - 9 * 60000).toISOString(),
       },
       {
@@ -337,7 +337,7 @@ export const mockIncidents: (Incident & {
         incidentId: 'inc-p1-order-err',
         type: 'note',
         note: 'SRE team paged via PagerDuty webhook. Traffic shifted to canary rollback pool pending investigation.',
-        createdBy: 'oncall-sre@tracelens.io',
+        createdBy: 'oncall-sre@tracinger.io',
         createdAt: new Date(Date.now() - 5 * 60000).toISOString(),
       },
     ],

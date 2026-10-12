@@ -241,7 +241,7 @@ incidentsRouter.post('/:id/analyze', async (req: Request, res: Response, next: N
         incidentId: id,
         type: 'intelligence_reanalyzed',
         note: `Incident intelligence re-evaluated: ${ranking.candidates.length} root-cause candidates ranked (top: ${ranking.candidates[0]?.candidateLabel ?? 'none'})`,
-        createdBy: 'TraceLens Intelligence Engine',
+        createdBy: 'Tracinger Intelligence Engine',
       },
     });
 

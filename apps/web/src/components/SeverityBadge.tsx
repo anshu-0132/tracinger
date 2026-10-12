@@ -1,5 +1,5 @@
 import React from 'react';
-import type { AlertSeverity } from '@tracelens/shared';
+import type { AlertSeverity } from '@tracinger/shared';
 
 interface SeverityBadgeProps {
   severity: AlertSeverity;

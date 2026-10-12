@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { rankRootCauses, IncidentContext } from './intelligenceEngine';
-import type { Incident, Deployment } from '@tracelens/shared';
+import type { Incident, Deployment } from '@tracinger/shared';
 
 describe('Incident Intelligence Engine — rankRootCauses', () => {
   const baseIncident: Incident = {

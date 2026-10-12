@@ -1,4 +1,4 @@
-name: TraceLens CI
+name: Tracinger CI
 
 on:
   push:
@@ -15,9 +15,9 @@ jobs:
       postgres:
         image: postgres:16-alpine
         env:
-          POSTGRES_USER: tracelens
-          POSTGRES_PASSWORD: tracelens_dev_pw
-          POSTGRES_DB: tracelens
+          POSTGRES_USER: tracinger
+          POSTGRES_PASSWORD: tracinger_dev_pw
+          POSTGRES_DB: tracinger
         ports:
           - 5432:5432
         options: >-
@@ -51,7 +51,7 @@ jobs:
       - name: Execute Vitest Unit & Integration Tests
         run: npm run test
         env:
-          DATABASE_URL: postgresql://tracelens:tracelens_dev_pw@localhost:5432/tracelens
+          DATABASE_URL: postgresql://tracinger:tracinger_dev_pw@localhost:5432/tracinger
           NODE_ENV: test
 
       - name: Build Shared Packages & Frontend

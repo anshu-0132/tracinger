@@ -24,7 +24,7 @@ async function main() {
   const app = createApp();
 
   const server = app.listen(PORT, () => {
-    logger.info({ port: PORT, env: env.NODE_ENV }, 'TraceLens API started');
+    logger.info({ port: PORT, env: env.NODE_ENV }, 'Tracinger API started');
   });
 
   // ── Graceful shutdown ────────────────────────────────────────────────────

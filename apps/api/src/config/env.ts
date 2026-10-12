@@ -3,7 +3,7 @@ import { z } from 'zod';
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.coerce.number().int().positive().default(3001),
-  DATABASE_URL: z.string().default('postgresql://tracelens:tracelens_dev_pw@localhost:5432/tracelens'),
+  DATABASE_URL: z.string().default('postgresql://tracinger:tracinger_dev_pw@localhost:5432/tracinger'),
   CORS_ORIGINS: z.string().default('http://localhost:5173,http://localhost:3000'),
   // Telemetry backend
   GRAFANA_BASE_URL: z.string().url().default('http://localhost:3000'),
@@ -12,7 +12,7 @@ const envSchema = z.object({
   PROMETHEUS_BASE_URL: z.string().url().default('http://localhost:9090'),
   // OpenTelemetry
   OTEL_EXPORTER_OTLP_ENDPOINT: z.string().url().default('http://localhost:4318'),
-  OTEL_SERVICE_NAME: z.string().default('tracelens-api'),
+  OTEL_SERVICE_NAME: z.string().default('tracinger-api'),
   // Demo services
   ORDER_SERVICE_URL: z.string().url().default('http://localhost:3010'),
   INVENTORY_SERVICE_URL: z.string().url().default('http://localhost:3011'),

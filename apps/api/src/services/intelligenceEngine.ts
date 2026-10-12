@@ -28,7 +28,7 @@ import type {
   TelemetryLink,
   Incident,
   Deployment,
-} from '@tracelens/shared';
+} from '@tracinger/shared';
 import { env } from '../config/env';
 
 // ─────────────────────────────────────────────────────────────────────────────

@@ -1,5 +1,5 @@
 {
-  "name": "@tracelens/web",
+  "name": "@tracinger/web",
   "private": true,
   "version": "1.0.0",
   "type": "module",
@@ -24,7 +24,7 @@
     "react-dom": "^19.2.8",
     "react-router-dom": "^7.3.0",
     "recharts": "^2.15.0",
-    "@tracelens/shared": "*"
+    "@tracinger/shared": "*"
   },
   "devDependencies": {
     "@playwright/test": "^1.50.1",

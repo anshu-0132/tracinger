@@ -13,7 +13,7 @@
 import axios, { AxiosInstance } from 'axios';
 import { logger } from '../config/logger';
 import { env } from '../config/env';
-import type { LogEntry, SpanInfo, TraceInfo, TimeSeriesPoint } from '@tracelens/shared';
+import type { LogEntry, SpanInfo, TraceInfo, TimeSeriesPoint } from '@tracinger/shared';
 
 const QUERY_TIMEOUT_MS = 10_000;
 

@@ -1,0 +1,263 @@
+version: '3.9'
+
+# ─────────────────────────────────────────────────────────────────────────────
+# TraceLens — Docker Compose
+# ─────────────────────────────────────────────────────────────────────────────
+
+networks:
+  tracelens:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  grafana_data:
+  loki_data:
+  tempo_data:
+  prometheus_data:
+
+x-common-env: &common-env
+  NODE_ENV: ${NODE_ENV:-development}
+  DATABASE_URL: postgresql://${POSTGRES_USER:-tracelens}:${POSTGRES_PASSWORD:-tracelens_dev_pw}@postgres:5432/${POSTGRES_DB:-tracelens}
+  OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
+  GRAFANA_BASE_URL: ${GRAFANA_BASE_URL:-http://localhost:3000}
+  LOKI_BASE_URL: http://loki:3100
+  TEMPO_BASE_URL: http://tempo:3200
+  PROMETHEUS_BASE_URL: http://prometheus:9090
+  ORDER_SERVICE_URL: http://order-service:3010
+  INVENTORY_SERVICE_URL: http://inventory-service:3011
+  ENABLE_FAULT_INJECTION: ${ENABLE_FAULT_INJECTION:-true}
+
+services:
+
+  # ── PostgreSQL ─────────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-tracelens}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-tracelens_dev_pw}
+      POSTGRES_DB: ${POSTGRES_DB:-tracelens}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-tracelens} -d ${POSTGRES_DB:-tracelens}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - tracelens
+    restart: unless-stopped
+
+  # ── OTel Collector ─────────────────────────────────────────────────────────
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.117.0
+    command: ["--config=/etc/otel/config.yaml"]
+    volumes:
+      - ./infra/otel-collector/config.yaml:/etc/otel/config.yaml:ro
+    ports:
+      - "4317:4317"   # OTLP gRPC
+      - "4318:4318"   # OTLP HTTP
+      - "8888:8888"   # Collector metrics
+      - "8889:8889"   # Prometheus exporter
+    depends_on:
+      - prometheus
+      - loki
+      - tempo
+    networks:
+      - tracelens
+    restart: unless-stopped
+
+  # ── Prometheus ─────────────────────────────────────────────────────────────
+  prometheus:
+    image: prom/prometheus:v3.1.0
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --web.enable-remote-write-receiver
+      - --storage.tsdb.retention.time=7d
+    volumes:
+      - ./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - tracelens
+    restart: unless-stopped
+
+  # ── Loki ───────────────────────────────────────────────────────────────────
+  loki:
+    image: grafana/loki:3.3.2
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - ./infra/loki/local-config.yaml:/etc/loki/local-config.yaml:ro
+      - loki_data:/loki
+    ports:
+      - "3100:3100"
+    networks:
+      - tracelens
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:3100/ready || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # ── Tempo ──────────────────────────────────────────────────────────────────
+  tempo:
+    image: grafana/tempo:2.7.1
+    command: -config.file=/etc/tempo.yaml
+    volumes:
+      - ./infra/tempo/tempo.yaml:/etc/tempo.yaml:ro
+      - tempo_data:/var/tempo
+    ports:
+      - "3200:3200"   # Tempo HTTP API
+      - "4317"        # internal gRPC (no host port to avoid conflict)
+    networks:
+      - tracelens
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:3200/ready || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # ── Grafana ────────────────────────────────────────────────────────────────
+  grafana:
+    image: grafana/grafana:11.4.0
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-tracelens_grafana}
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: "Viewer"
+      GF_FEATURE_TOGGLES_ENABLE: "traceqlEditor"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./infra/grafana/provisioning:/etc/grafana/provisioning:ro
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+      - loki
+      - tempo
+    networks:
+      - tracelens
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:3000/api/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  # ── Database migrations ────────────────────────────────────────────────────
+  migrate:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.migrate
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-tracelens}:${POSTGRES_PASSWORD:-tracelens_dev_pw}@postgres:5432/${POSTGRES_DB:-tracelens}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - tracelens
+    restart: on-failure
+
+  # ── TraceLens API ─────────────────────────────────────────────────────────
+  api:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.api
+    environment:
+      <<: *common-env
+      PORT: 3001
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173,http://localhost:3000}
+      ALERT_EVAL_INTERVAL_SECONDS: ${ALERT_EVAL_INTERVAL_SECONDS:-30}
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+      otel-collector:
+        condition: service_started
+    networks:
+      - tracelens
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:3001/api/health/live || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  # ── TraceLens Worker ──────────────────────────────────────────────────────
+  worker:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.worker
+    environment:
+      <<: *common-env
+      ALERT_EVAL_INTERVAL_SECONDS: ${ALERT_EVAL_INTERVAL_SECONDS:-30}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    networks:
+      - tracelens
+    restart: unless-stopped
+
+  # ── TraceLens Web ──────────────────────────────────────────────────────────
+  web:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.web
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:3001}
+    ports:
+      - "5173:80"
+    depends_on:
+      - api
+    networks:
+      - tracelens
+    restart: unless-stopped
+
+  # ── Order Service (demo) ──────────────────────────────────────────────────
+  order-service:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.order-service
+    environment:
+      NODE_ENV: development
+      PORT: 3010
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
+      OTEL_SERVICE_NAME: order-service
+      INVENTORY_SERVICE_URL: http://inventory-service:3011
+      ENABLE_FAULT_INJECTION: ${ENABLE_FAULT_INJECTION:-true}
+    ports:
+      - "3010:3010"
+    depends_on:
+      - otel-collector
+    networks:
+      - tracelens
+    restart: unless-stopped
+
+  # ── Inventory Service (demo) ──────────────────────────────────────────────
+  inventory-service:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.inventory-service
+    environment:
+      NODE_ENV: development
+      PORT: 3011
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
+      OTEL_SERVICE_NAME: inventory-service
+      ENABLE_FAULT_INJECTION: ${ENABLE_FAULT_INJECTION:-true}
+    ports:
+      - "3011:3011"
+    depends_on:
+      - otel-collector
+    networks:
+      - tracelens
+    restart: unless-stopped

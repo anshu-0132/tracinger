@@ -1,0 +1,283 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Services
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Service {
+  id          String   @id @default(cuid())
+  name        String
+  environment String   @default("production")
+  description String?
+  tags        String[] @default([])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  alertRules  AlertRule[]
+  incidents   Incident[]
+
+  @@unique([name, environment])
+  @@index([environment])
+  @@map("services")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Alert Rules
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum AlertSeverity {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+  INFO
+}
+
+enum AlertMetric {
+  ERROR_RATE
+  P95_LATENCY
+  P99_LATENCY
+  P50_LATENCY
+  REQUEST_RATE
+  AVAILABILITY
+  SLO_BURN_RATE
+  TELEMETRY_ABSENT
+}
+
+enum AlertOperator {
+  GREATER_THAN
+  LESS_THAN
+  GREATER_THAN_OR_EQUAL
+  LESS_THAN_OR_EQUAL
+}
+
+model AlertRule {
+  id                 String        @id @default(cuid())
+  name               String
+  description        String?
+  serviceId          String
+  service            Service       @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  metric             AlertMetric
+  operator           AlertOperator
+  threshold          Float
+  windowMinutes      Int           @default(5)
+  pendingMinutes     Int           @default(1)
+  severity           AlertSeverity @default(MEDIUM)
+  enabled            Boolean       @default(true)
+  // SLO fields
+  sloTarget          Float?        // e.g. 0.999 for 99.9%
+  sloBudgetMinutes   Int?          // rolling window in minutes
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  incidents Incident[]
+
+  @@index([serviceId])
+  @@index([enabled])
+  @@map("alert_rules")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Incidents
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum IncidentStatus {
+  OPEN
+  ACKNOWLEDGED
+  RESOLVED
+}
+
+model Incident {
+  id               String         @id @default(cuid())
+  fingerprint      String         @unique
+  serviceId        String
+  service          Service        @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  alertRuleId      String?
+  alertRule        AlertRule?     @relation(fields: [alertRuleId], references: [id], onDelete: SetNull)
+  severity         AlertSeverity
+  status           IncidentStatus @default(OPEN)
+  title            String
+  description      String?
+  startedAt        DateTime       @default(now())
+  detectedAt       DateTime       @default(now())
+  acknowledgedAt   DateTime?
+  resolvedAt       DateTime?
+  assignee         String?
+  // Current measurement snapshot
+  currentValue     Float?
+  threshold        Float?
+  // Evidence / intelligence
+  evidenceJson     Json?          // ranked root-cause candidates
+  telemetryLinks   Json?          // links to Grafana/traces
+  investigationNotes String?
+  // Deployment correlation
+  correlatedDeploymentId String?
+  correlatedDeployment   Deployment? @relation(fields: [correlatedDeploymentId], references: [id], onDelete: SetNull)
+
+  events IncidentEvent[]
+  notificationDeliveries NotificationDelivery[]
+
+  updatedAt DateTime @updatedAt
+
+  @@index([serviceId])
+  @@index([status])
+  @@index([severity])
+  @@index([startedAt])
+  @@index([fingerprint])
+  @@map("incidents")
+}
+
+model IncidentEvent {
+  id          String   @id @default(cuid())
+  incidentId  String
+  incident    Incident @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+  type        String   // status_change, note, auto_update, deployment_correlated
+  fromStatus  String?
+  toStatus    String?
+  note        String?
+  metadata    Json?
+  createdBy   String?  @default("system")
+  createdAt   DateTime @default(now())
+
+  @@index([incidentId])
+  @@index([createdAt])
+  @@map("incident_events")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Deployments
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Deployment {
+  id           String   @id @default(cuid())
+  serviceName  String
+  environment  String   @default("production")
+  version      String
+  commitSha    String?
+  releaseNotes String?
+  deployedAt   DateTime @default(now())
+  deployedBy   String?
+  createdAt    DateTime @default(now())
+
+  incidents Incident[]
+
+  @@index([serviceName])
+  @@index([environment])
+  @@index([deployedAt])
+  @@map("deployments")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Notifications
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum NotificationChannel {
+  WEBHOOK
+}
+
+enum NotificationStatus {
+  PENDING
+  DELIVERED
+  FAILED
+  RETRY
+}
+
+model NotificationConfig {
+  id         String              @id @default(cuid())
+  name       String
+  channel    NotificationChannel
+  webhookUrl String?
+  enabled    Boolean             @default(true)
+  createdAt  DateTime            @default(now())
+  updatedAt  DateTime            @updatedAt
+
+  deliveries NotificationDelivery[]
+
+  @@map("notification_configs")
+}
+
+model NotificationDelivery {
+  id                   String             @id @default(cuid())
+  notificationConfigId String
+  notificationConfig   NotificationConfig @relation(fields: [notificationConfigId], references: [id], onDelete: Cascade)
+  incidentId           String
+  incident             Incident           @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+  event                String             // incident_opened, incident_resolved, severity_changed
+  status               NotificationStatus @default(PENDING)
+  attempts             Int                @default(0)
+  maxAttempts          Int                @default(5)
+  lastAttemptAt        DateTime?
+  nextAttemptAt        DateTime?
+  responseCode         Int?
+  responseBody         String?
+  error                String?
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  @@index([incidentId])
+  @@index([status])
+  @@index([nextAttemptAt])
+  @@map("notification_deliveries")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Replay Lab
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum ReplayRunStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+model ReplayRun {
+  id               String          @id @default(cuid())
+  scenarioId       String
+  scenarioName     String
+  status           ReplayRunStatus @default(PENDING)
+  startedAt        DateTime?
+  completedAt      DateTime?
+  // Results
+  incidentDetected Boolean?
+  detectionDelayMs Int?
+  incidentId       String?
+  expectedIncident Boolean         @default(true)
+  recovered        Boolean?
+  recoveryDelayMs  Int?
+  // Pass/fail
+  passed           Boolean?
+  failureReason    String?
+  // Evidence / metadata
+  rawResult        Json?
+  notes            String?
+  createdAt        DateTime        @default(now())
+
+  @@index([scenarioId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("replay_runs")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// App Settings
+// ─────────────────────────────────────────────────────────────────────────────
+
+model AppSetting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+
+  @@map("app_settings")
+}

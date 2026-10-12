@@ -1,0 +1,58 @@
+name: TraceLens CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  validate:
+    name: Build, Lint & Test
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: tracelens
+          POSTGRES_PASSWORD: tracelens_dev_pw
+          POSTGRES_DB: tracelens
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install Monorepo Dependencies
+        run: npm ci
+
+      - name: Generate Prisma Client
+        run: npm run db:generate
+
+      - name: Verify Code Formatting
+        run: npm run format:check
+
+      - name: Run Typecheck Across Workspaces
+        run: npm run typecheck
+
+      - name: Execute Vitest Unit & Integration Tests
+        run: npm run test
+        env:
+          DATABASE_URL: postgresql://tracelens:tracelens_dev_pw@localhost:5432/tracelens
+          NODE_ENV: test
+
+      - name: Build Shared Packages & Frontend
+        run: npm run build

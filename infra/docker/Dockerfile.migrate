@@ -1,0 +1,9 @@
+FROM node:22-slim
+WORKDIR /app
+RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
+COPY prisma/schema.prisma ./prisma/
+COPY prisma/seed.ts ./prisma/
+COPY prisma/tsconfig.json ./prisma/
+RUN npm init -y && npm install prisma@6.4.1 @prisma/client@6.4.1 ts-node@10.9.2 typescript@5.7.3 @types/node@22.0.0 --no-audit
+RUN npx prisma generate --schema=prisma/schema.prisma
+CMD ["sh", "-c", "npx prisma db push --schema=prisma/schema.prisma --accept-data-loss && npx ts-node -P prisma/tsconfig.json prisma/seed.ts"]
